@@ -1,0 +1,240 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>data</title>
+    <link rel="manifest" href="js/manifest.json" />
+    <script>
+      const pwa = async () => {
+        if ("serviceWorker" in navigator) {
+          await window.addEventListener("load", function () {
+            navigator.serviceWorker
+              .register("../js/serviceWorker.js")
+              .then((res) => console.log("service worker registered"))
+              .catch((err) =>
+                console.log("service worker not registered", err)
+              );
+          });
+        }
+      };
+      pwa();
+      let urlParams = {};
+      var page, datalen, start, end, temp;
+      const more_data = (index) => {
+        fetch(
+          "https://corsanywhere.herokuapp.com/https://TragicMedicalObjectcode.harrykanani.repl.co/get-user",
+          {
+            method: "POST",
+            headers: { "Content-type": "application/json;charset=UTF-8" },
+            body: JSON.stringify({ userID: index }),
+          }
+        ).then(async (response) => {
+          console.log(response.status);
+          var data = await response.json();
+          console.log("data,", data);
+          if (response.status == 201) {
+            var data_arr = [];
+            var table2 = "<table  border='1'>";
+            table2 +=
+              "<tr> <th colspan='2'> " + data["nickname"] + "</th> </tr>";
+            for (i = 0; i < data["logs"].length; i++) {
+              table2 +=
+                "<tr> <td>" +
+                data["logs"][i]["date"] +
+                "</td> <td>" +
+                data["logs"][i]["token"] +
+                "</td> </tr>";
+            }
+            table2 += "</table>";
+            table2 += "<br>";
+            table2 += "<br>";
+            var newtable = document.createElement("table");
+            newtable.style.border = "1px solid";
+            newtable.innerHTML = table2;
+            var tableHtml = document.getElementsByClassName(
+              `${index.slice(0, 5)}`
+            )[0];
+            tableHtml.replaceWith(newtable);
+            document.getElementsByClassName(
+              `${index.slice(index.length - 5, index.length)}`
+            )[0].style.display = "none";
+            //  var par = document.getElementById("data");
+            //  par.innerHTML += JSON.stringify(data);
+            //  console.log(data);
+          } else {
+            console.log(data);
+          }
+        });
+      };
+
+      async function parseParams() {
+        (window.onpopstate = function () {
+          let match,
+            pl = /\+/g, // Regex for replacing addition symbol with a space
+            search = /([^&=]+)=?([^&]*)/g,
+            decode = function (s) {
+              return decodeURIComponent(s.replace(pl, " "));
+            },
+            query = window.location.search.substring(1);
+
+          while ((match = search.exec(query))) {
+            if (decode(match[1]) in urlParams) {
+              if (!Array.isArray(urlParams[decode(match[1])])) {
+                urlParams[decode(match[1])] = [urlParams[decode(match[1])]];
+              }
+              urlParams[decode(match[1])].push(decode(match[2]));
+            } else {
+              urlParams[decode(match[1])] = decode(match[2]);
+            }
+          }
+        })();
+      }
+
+      async function test() {
+        await parseParams();
+      }
+      test();
+
+      urlParams = urlParams["id"];
+
+      if (Array.isArray(urlParams)) {
+        //for (var index = 0; index < urlParams.length; index++) {
+        urlParams.map((item, index) => {
+          console.log("index ", index);
+          console.log("in loop");
+          fetch(
+            "https://corsanywhere.herokuapp.com/https://TragicMedicalObjectcode.harrykanani.repl.co/get-user",
+            {
+              method: "POST",
+              headers: { "Content-type": "application/json;charset=UTF-8" },
+              body: JSON.stringify({ userID: urlParams[index] }),
+            }
+          ).then(async (response) => {
+            console.log(response.status);
+            var data = await response.json();
+            if (response.status == 201) {
+              var data_arr = [];
+              var table = `<div style='text-align:center;'><table class='${urlParams[
+                index
+              ].slice(0, 5)}' style='border:1px solid;width:100%'>`;
+              table +=
+                "<tr> <th colspan='2'> " + data["nickname"] + "</th> </tr>";
+
+              for (i = 0; i < data["logs"].length; i++) {
+                data_arr.push({
+                  time: data["logs"][i]["date"],
+                  token: data["logs"][i]["token"],
+                });
+              }
+              page = Math.ceil(data_arr.length / 5);
+              datalen = Math.ceil(data_arr.length / 5);
+              start = data_arr.length - 5;
+              end = data_arr.length;
+              temp = data_arr.length;
+              console.log(data_arr.length);
+              for (i = start; i < end; i++) {
+                table +=
+                  "<tr> <td>" +
+                  data["logs"][i]["date"] +
+                  "</td> <td>" +
+                  data["logs"][i]["token"] +
+                  "</td> </tr>";
+              }
+              table += "</table><br>";
+              table += `<button class='${urlParams[index].slice(
+                urlParams[index].length - 5,
+                urlParams[index].length
+              )}' onclick='more_data("${
+                urlParams[index]
+              }")'>more</button></div>`;
+              //  table += "<br>";
+              //  table += "<br>";
+              var tableHtml = document.getElementById("table");
+              tableHtml.innerHTML += table;
+
+              //  var par = document.getElementById("data");
+              //  par.innerHTML += JSON.stringify(data);
+              //  console.log(data);
+            } else {
+              console.log(data);
+            }
+          });
+        });
+        // }
+      } else {
+        console.log("in loop");
+        fetch(
+          "https://corsanywhere.herokuapp.com/https://TragicMedicalObjectcode.harrykanani.repl.co/get-user",
+          {
+            method: "POST",
+            headers: { "Content-type": "application/json;charset=UTF-8" },
+            body: JSON.stringify({ userID: urlParams }),
+          }
+        ).then(async (response) => {
+          console.log(response.status);
+
+          var data = await response.json();
+          console.log("data ", data);
+          console.log("params ", urlParams);
+          if (response.status == 201) {
+            var data_arr = [];
+            var table = `<div><table class='${urlParams.slice(
+              0,
+              5
+            )}' style='border:1px solid';width:100%>`;
+            table +=
+              "<tr> <th colspan='2'> " + data["nickname"] + "</th> </tr>";
+
+            for (i = 0; i < data["logs"].length; i++) {
+              data_arr.push({
+                time: data["logs"][i]["date"],
+                token: data["logs"][i]["token"],
+              });
+            }
+            page = Math.ceil(data_arr.length / 5);
+            datalen = Math.ceil(data_arr.length / 5);
+            start = data_arr.length - 5;
+            end = data_arr.length;
+            temp = data_arr.length;
+            for (i = start; i < end; i++) {
+              table +=
+                "<tr> <td>" +
+                data["logs"][i]["date"] +
+                "</td> <td>" +
+                data["logs"][i]["token"] +
+                "</td> </tr>";
+            }
+            table += "</table><br>";
+            table += `<button class='${urlParams.slice(
+              urlParams.length - 5,
+              urlParams.length
+            )}' onclick='more_data("${urlParams}")'>more</button></div>`;
+            // table += "<br>";
+            // table += "<br>";
+            var tableHtml = document.getElementById("table");
+            tableHtml.innerHTML += table;
+
+            // var par = document.getElementById("data");
+            // par.innerHTML += JSON.stringify(data);
+            // // console.log(data);
+          } else {
+            console.log(data);
+          }
+        });
+      }
+    </script>
+  </head>
+
+  <body>
+    <div
+      id="table"
+      style="
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-gap: 20px;
+      "
+    ></div>
+    <p id="data"></p>
+  </body>
+</html>

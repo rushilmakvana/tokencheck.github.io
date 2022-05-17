@@ -1,0 +1,9 @@
+{
+    "name": "tokendata",
+    "short_name": "tokendata",
+    "start_url": "data.html",
+    "display": "standalone",
+    "background_color": "#fdfdfd",
+    "theme_color": "#db4938",
+    "orientation": "portrait-primary"
+}
